@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>חנות ציוד לטיולים — TERRA</title>
+    <meta name="description" content="חנות ציוד לטיולים עם הכל שצריך לצאת לטבע בביטחון. תרמילים, אוהלים, ביגוד ועוד — TERRA היא היעד שלך לכל הרפתקה בחוץ. קנה עכשיו!">
+    <meta name="keywords" content="חנות ציוד לטיולים, TERRA, ציוד חוץ, ציוד קמפינג, הרפתקאות טבע">
+    
+    <!-- Zappy Analytics -->
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration
+  var config = {
+    websiteId: '9abb4bf3-50ab-487f-bcd4-817919ef566d',
+    apiUrl: 'https://api.zappy5.com/api/analytics/track',
+    sessionDuration: 30 * 60 * 1000, // 30 minutes
+    visitorDuration: 30 * 24 * 60 * 60 * 1000, // 30 days
+    trackPageViews: true,
+    trackClicks: true,
+    trackFormSubmissions: true
+  };
+  
+  // Generate or retrieve persistent visitor ID (30 days)
+  function getVisitorId() {
+    var visitorKey = 'zappy_visitor_' + config.websiteId;
+    var visitor = null;
+    
+    try {
+      visitor = localStorage.getItem(visitorKey);
+      if (visitor) {
+        var visitorData = JSON.parse(visitor);
+        var now = Date.now();
+        
+        // Check if visitor ID is still valid (30 days)
+        if (now - visitorData.created < config.visitorDuration) {
+          // Update last seen timestamp
+          visitorData.lastSeen = now;
+          localStorage.setItem(visitorKey, JSON.stringify(visitorData));
+          return visitorData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: LocalStorage not available');
+    }
+    
+    // Generate new visitor ID
+    var newVisitorId = 'zv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      localStorage.setItem(visitorKey, JSON.stringify({
+        id: newVisitorId,
+        created: Date.now(),
+        lastSeen: Date.now()
+      }));
+    } catch (e) {
+      // Continue without local storage
+    }
+    
+    return newVisitorId;
+  }
+  
+  // Generate or retrieve session ID (30 minutes)
+  function getSessionId() {
+    var sessionKey = 'zappy_session_' + config.websiteId;
+    var session = null;
+    
+    try {
+      session = sessionStorage.getItem(sessionKey);
+      if (session) {
+        var sessionData = JSON.parse(session);
+        var now = Date.now();
+        
+        // Check if session is still valid
+        if (now - sessionData.timestamp < config.sessionDuration) {
+          // Update timestamp
+          sessionData.timestamp = now;
+          sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          return sessionData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: SessionStorage not available');
+    }
+    
+    // Generate new session ID
+    var newSessionId = 'zs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      sessionStorage.setItem(sessionKey, JSON.stringify({
+        id: newSessionId,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // Continue without session storage
+    }
+    
+    return newSessionId;
+  }
+  
+  var visitorId = getVisitorId();
+  var sessionId = getSessionId();
+  
+  // Track an event
+  function trackEvent(eventType, data) {
+    data = data || {};
+    
+    var eventData = {
+      website_id: config.websiteId,
+      event_type: eventType,
+      page_path: window.location.pathname,
+      referrer: document.referrer || 'direct',
+      visitor_id: visitorId,
+      session_id: sessionId,
+      metadata: data
+    };
+    
+    // Use sendBeacon if available (better for page unload events)
+    if (navigator.sendBeacon) {
+      var blob = new Blob([JSON.stringify(eventData)], { type: 'application/json' });
+      navigator.sendBeacon(config.apiUrl, blob);
+    } else {
+      // Fallback to fetch
+      fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData),
+        keepalive: true
+      }).catch(function(error) {
+        console.warn('Zappy Analytics: Failed to track event', error);
+      });
+    }
+  }
+  
+  // Track page view
+  if (config.trackPageViews) {
+    trackEvent('pageview', {
+      title: document.title,
+      url: window.location.href
+    });
+  }
+  
+  // Track clicks on important elements
+  if (config.trackClicks) {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      
+      // Track button clicks (counted as actions)
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        var button = target.tagName === 'BUTTON' ? target : target.closest('button');
+        trackEvent('click', {
+          element: 'button',
+          text: button.textContent.trim().substring(0, 100),
+          id: button.id || null,
+          class: button.className || null
+        });
+      }
+      
+      // Track link clicks (navigation - not counted as actions)
+      else if (target.tagName === 'A' || target.closest('a')) {
+        var link = target.tagName === 'A' ? target : target.closest('a');
+        trackEvent('navigation', {
+          element: 'link',
+          text: link.textContent.trim().substring(0, 100),
+          href: link.href,
+          external: link.hostname !== window.location.hostname
+        });
+      }
+    }, true);
+  }
+  
+  // Track form submissions
+  if (config.trackFormSubmissions) {
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      
+      trackEvent('form_submit', {
+        form_id: form.id || null,
+        form_name: form.name || null,
+        form_action: form.action || null,
+        form_method: form.method || 'GET'
+      });
+    }, true);
+  }
+  
+  // Track time on page (send on page unload)
+  var pageLoadTime = Date.now();
+  
+  window.addEventListener('beforeunload', function() {
+    var timeOnPage = Math.floor((Date.now() - pageLoadTime) / 1000); // in seconds
+    
+    trackEvent('page_unload', {
+      time_on_page: timeOnPage,
+      page_path: window.location.pathname
+    });
+  });
+  
+  // Expose tracking function globally for custom events
+  window.zappyAnalytics = {
+    track: trackEvent,
+    getVisitorId: function() { return visitorId; },
+    getSessionId: function() { return sessionId; }
+  };
+  
+})();
+</script>
+<!-- End Zappy Analytics -->
+    <meta property="og:title" content="חנות ציוד לטיולים — TERRA">
+  <meta property="og:description" content="חנות ציוד לטיולים עם הכל שצריך לצאת לטבע בביטחון. תרמילים, אוהלים, ביגוד ועוד — TERRA היא היעד שלך לכל הרפתקה בחוץ. קנה עכשיו!">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="he_IL">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="חנות ציוד לטיולים — TERRA">
+  <meta name="twitter:description" content="חנות ציוד לטיולים עם הכל שצריך לצאת לטבע בביטחון. תרמילים, אוהלים, ביגוד ועוד — TERRA היא היעד שלך לכל הרפתקה בחוץ. קנה עכשיו!">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    <!-- Cookie Consent -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.css">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.umd.js"></script>
+    <!-- Mickidum Accessibility Toolbar -->
+    <script src="https://cdn.jsdelivr.net/gh/mickidum/acc_toolbar/acctoolbar/acctoolbar.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+
+    <style id="zappy-dropdown-submenu-styles">
+      /* ========== DESKTOP DROPDOWN SUBMENU STYLES ========== */
+      /* Base styles for dropdown submenus - parent must be positioned */
+      .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { position: relative; }
+      /* Submenu base - hidden by default */
+      .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { display: block !important; position: absolute !important; top: 100%; left: 0; min-width: 220px; background: white; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); padding: 8px 0; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 1000; list-style: none; pointer-events: none; }
+      /* CRITICAL: Desktop hover styles to show dropdown */
+      .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Submenu item styling */
+      .sub-menu li { list-style: none; margin: 0; padding: 0; }
+      .sub-menu a { display: block !important; padding: 10px 16px !important; color: var(--text-dark, #333) !important; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background-color 0.2s; }
+      .sub-menu a:hover { background-color: #f5f5f5; }
+      /* RTL (Hebrew/Arabic) dropdown positioning */
+      [dir="rtl"] .nav-menu .sub-menu, [dir="rtl"] nav .sub-menu, [dir="rtl"] .navbar .sub-menu, html[lang="he"] .nav-menu .sub-menu, html[lang="he"] nav .sub-menu, html[lang="he"] .navbar .sub-menu, html[lang="ar"] .nav-menu .sub-menu, html[lang="ar"] nav .sub-menu, html[lang="ar"] .navbar .sub-menu { left: auto !important; right: 0 !important; }
+      /* Hide empty dropdown menus */
+      .sub-menu:empty, .sub-menu:not(:has(li:not(.zappy-hidden-menu-item))), .sub-menu:not(:has(li)) { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+      /* Desktop: show submenu on Menu Group hover */
+      li:has(.menu-group-title):hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Menu Group title styling */
+      .nav-menu > li > .menu-group-title, #navMenu > li > .menu-group-title { display: inline-block; padding: 0.5rem 1rem; cursor: default; user-select: none; }
+      
+      /* ========== MOBILE SUBMENU STYLES ========== */
+      @media (max-width: 768px) {
+        .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { position: static !important; transform: none !important; box-shadow: none !important; background: transparent !important; max-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; padding: 0 !important; border-radius: 0 !important; }
+        .sub-menu.mobile-expanded { max-height: 500px !important; opacity: 1 !important; visibility: visible !important; padding: 8px 0 8px 16px !important; }
+        [dir="rtl"] .sub-menu.mobile-expanded, html[lang="he"] .sub-menu.mobile-expanded { padding: 8px 16px 8px 0 !important; }
+        /* Disable hover behavior on mobile */
+        .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+        .nav-menu li > .sub-menu.mobile-expanded, nav li > .sub-menu.mobile-expanded, .navbar li > .sub-menu.mobile-expanded, #navMenu li > .sub-menu.mobile-expanded { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+        .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; position: relative !important; min-height: 44px !important; }
+        .nav-menu li:has(.sub-menu) > a, nav li:has(.sub-menu) > a, .navbar li:has(.sub-menu) > a, #navMenu li:has(.sub-menu) > a { flex: 1 !important; min-width: 0 !important; }
+        .nav-menu li:has(.sub-menu) > .menu-group-title, nav li:has(.sub-menu) > .menu-group-title, .navbar li:has(.sub-menu) > .menu-group-title, #navMenu li:has(.sub-menu) > .menu-group-title { flex: 1 !important; min-width: 0 !important; padding: 0 !important; line-height: inherit !important; }
+        .nav-menu li:has(.sub-menu) > .sub-menu, nav li:has(.sub-menu) > .sub-menu, .navbar li:has(.sub-menu) > .sub-menu, #navMenu li:has(.sub-menu) > .sub-menu { flex-basis: 100% !important; width: 100% !important; }
+        .nav-menu li:has(.sub-menu) > a [class*="chevron"], .nav-menu li:has(.sub-menu) > a [class*="arrow"], .nav-menu li:has(.sub-menu) > a .fa-chevron-down, .nav-menu li:has(.sub-menu) > a .fa-angle-down, nav li:has(.sub-menu) > a [class*="chevron"], nav li:has(.sub-menu) > a [class*="arrow"], #navMenu li:has(.sub-menu) > a [class*="chevron"], #navMenu li:has(.sub-menu) > a [class*="arrow"] { display: none !important; visibility: hidden !important; }
+        .mobile-submenu-toggle { display: flex !important; align-items: center !important; justify-content: center !important; width: 44px !important; height: auto !important; background: transparent !important; border: none !important; cursor: pointer !important; color: var(--text-light) !important; position: static !important; flex-shrink: 0 !important; align-self: stretch !important; z-index: 2 !important; padding: 0 !important; margin: 0 !important; }
+        .mobile-submenu-toggle::after { content: '' !important; width: 0 !important; height: 0 !important; border-left: 6px solid transparent !important; border-right: 6px solid transparent !important; border-top: 7px solid currentColor !important; transition: transform 0.3s ease !important; }
+        .mobile-submenu-toggle.expanded::after { transform: rotate(180deg) !important; }
+        .sub-menu a { padding: 10px 0 !important; display: block !important; color: var(--text-light) !important; }
+        .navbar .sub-menu li a, nav.navbar .sub-menu li a, .zappy-products-dropdown .sub-menu a { color: var(--text-light) !important; }
+      }
+      @media (min-width: 769px) { .mobile-submenu-toggle { display: none !important; } }
+    </style>
+
+    <style id="mobile-lang-menu-deployed-css">
+    @media (max-width: 768px) {
+      .lang-switcher,
+      .nav-cta-container .lang-switcher,
+      .nav-container .lang-switcher,
+      .navbar .lang-switcher,
+      .navbar .nav-cta-container .lang-switcher,
+      .nav-icons-left .lang-switcher,
+      .nav-ecommerce-icons .lang-switcher { display: none !important; }
+      .mobile-lang-menu { width: 100%; border-top: 1px solid rgba(128,128,128,0.2); padding: 8px 0 0 0; margin-top: 8px; }
+      .mobile-lang-toggle { display: flex !important; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: none; border: none; cursor: pointer; font-size: 15px; color: inherit; font-family: inherit; }
+      .mobile-lang-toggle::after { content: ''; display: inline-block; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.3s ease; margin-left: 8px; }
+      .mobile-lang-toggle.expanded::after { transform: rotate(-135deg); }
+      .mobile-lang-options { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+      .mobile-lang-options.expanded { max-height: 300px; }
+      .mobile-lang-option { display: flex !important; align-items: center; gap: 10px; padding: 10px 24px; text-decoration: none; color: inherit; font-size: 14px; font-family: inherit; }
+      .mobile-lang-option:hover { background: rgba(128,128,128,0.1); }
+      .mobile-lang-option.active { font-weight: 600; opacity: 0.7; pointer-events: none; }
+      .mobile-lang-option img { width: 20px; height: 20px; border-radius: 50%; }
+    }
+    @media (min-width: 769px) {
+      .mobile-lang-menu { display: none !important; }
+    }
+    </style>
+
+    <style id="zappy-widget-visibility">
+      #mic-access-tool-general-button, .mic-access-tool-general-button,
+      #mic-init-access-tool .mic-access-tool-general-button, #mic-init-access-tool #mic-access-tool-general-button,
+      ._access-icon, #mic-access-tool-box, .mic-access-tool-box,
+      #mic-init-access-tool #mic-access-tool-box, div[id*="mic-access-tool-box"], ._access-menu {
+        display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;
+      }
+    </style>
+</head>
+<body>
+
+
+    <div class="mobile-search-panel" id="mobile-search-panel">
+      <div class="search-wrapper">
+        <input type="text" id="mobile-search-input" placeholder="חיפוש מוצרים..." autocomplete="off">
+        <button class="search-submit" id="mobile-search-submit" title="חיפוש">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+        </button>
+        <button class="close-search" id="close-mobile-search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="search-results" id="mobile-search-results"></div>
+    </div>
+  
+<script>window.ZAPPY_WEBSITE_ID = "9abb4bf3-50ab-487f-bcd4-817919ef566d";window.ZAPPY_API_BASE = (window.location.pathname.includes('/preview') ? "https://api.zappy5.com" : "https://api.zappy5.com");</script>
+  <nav class="navbar" dir="rtl">
+  <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+    <svg class="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+    <svg class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: none;">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+  </button>
+
+  <button class="phone-header-btn" data-phone="+972-00-000-0000" aria-label="Call">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+    </svg>
+  </button>
+
+  <div class="nav-container">
+    <div class="nav-right-group"><div class="nav-brand">
+      <a href="/" class="logo-link">
+        <img class="logo" data-placeholder="logo" data-context="business logo" width="160" height="40" src="/assets/business-logo.webp" alt="TERRA">
+      </a>
+    </div><ul class="nav-menu" id="navMenu">
+
+    <li class="menu-item-has-children zappy-products-dropdown">
+      <a href="/products">
+        מוצרים
+        <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9l6 6 6-6"></path>
+        </svg>
+      </a>
+      <ul class="sub-menu" id="zappy-nav-category-links">
+        <li><a href="/products">כל המוצרים</a></li>
+        <!-- Categories will be loaded dynamically -->
+      </ul>
+    </li>
+  <li><a href="/field-guide">מדריך שטח</a></li><li><a href="/about">אודות TERRA</a></li><li><a href="/contact">צור קשר</a></li></ul><div class="nav-ecommerce-icons nav-icons-left"><a href="/login" class="login-link nav-login" title="התחברות"><svg class="login-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></a><a href="#cart" class="cart-link nav-cart" id="cart-drawer-toggle" title="עגלת קניות"><svg class="cart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><span class="cart-count">0</span></a><div class="nav-search-box">
+    <input type="text" class="nav-search-input" id="nav-search-input" placeholder="חיפוש מוצרים..." autocomplete="off">
+    <button class="nav-search-btn" id="nav-search-btn" title="חיפוש">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+    </button>
+    <div class="nav-search-results" id="nav-search-results"></div>
+  </div></div><div class="nav-ecommerce-icons nav-icons-right"><button class="nav-search-toggle" id="mobile-search-toggle" title="חיפוש"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg></button></div></div>
+
+    
+
+    
+  </div>
+</nav>
+<script>
+
+// Navbar Mobile Menu Toggle and Contrast Fix
+(function() {
+  // Use 'load' event instead of 'DOMContentLoaded' to ensure we run AFTER all other scripts
+  window.addEventListener('load', function() {
+    
+    // FIX MOBILE BUTTON CONTRAST
+    // Detect navbar background color and apply contrasting color to mobile buttons
+    const navbar = document.querySelector('.navbar, nav, header');
+    if (!navbar) {
+      console.log('[Navbar] Navbar element not found');
+      return;
+    }
+    
+    // DECLARE VARIABLES EARLY to avoid Temporal Dead Zone errors
+    // These are used in multiple places below
+    let mobileToggle = document.getElementById('mobileToggle') ||
+                       document.querySelector('.mobile-toggle') ||
+                       document.querySelector('.hamburger') ||
+                       document.querySelector('.hamburger-menu') ||
+                       document.querySelector('.menu-toggle') ||
+                       document.querySelector('.burger-menu') ||
+                       document.querySelector('[aria-label="Menu"]') ||
+                       document.querySelector('[aria-label="תפריט"]');
+    
+    const phoneBtn = document.querySelector('.phone-header-btn');
+    
+    const computedStyle = window.getComputedStyle(navbar);
+    let bgColor = computedStyle.backgroundColor;
+    
+    console.log('[Navbar] Initial navbar background:', bgColor);
+    
+    // Check if background is transparent or rgba with 0 alpha
+    const isTransparent = bgColor === 'transparent' || 
+                         bgColor === 'rgba(0, 0, 0, 0)' ||
+                         (bgColor.startsWith('rgba') && bgColor.includes(', 0)'));
+    
+    if (isTransparent) {
+      // Check for background-image or gradient
+      const bgImage = computedStyle.backgroundImage;
+      if (bgImage && bgImage !== 'none') {
+        console.log('[Navbar] Navbar has background image/gradient, using dark text');
+        bgColor = 'rgb(240, 240, 240)'; // Assume light background
+      } else {
+        // Transparent navbar - check body background
+        const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+        console.log('[Navbar] Navbar transparent, using body background:', bodyBg);
+        bgColor = bodyBg;
+      }
+    }
+    
+    // Calculate luminance to determine if background is light or dark
+    const rgb = bgColor.match(/\d+/g);
+    if (rgb && rgb.length >= 3) {
+      const r = parseInt(rgb[0]);
+      const g = parseInt(rgb[1]);
+      const b = parseInt(rgb[2]);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      
+      // Mobile button colors are set by Claude's AI-generated CSS (same as .nav-menu a)
+      // No dynamic color overrides needed - colors come from the generated navbar CSS
+      console.log('[Navbar] Mobile button colors preserved from Claude CSS (luminance:', luminance.toFixed(2) + ')');
+      
+      // FIX ICON SIZES - Ensure SVGs are properly sized and visible
+      // INJECT CRITICAL CSS TO OVERRIDE ANY CONFLICTING RULES
+      const criticalCSS = document.createElement('style');
+      criticalCSS.id = 'zappy-mobile-nav-fix';
+      const htmlLang = document.documentElement.lang || 'en';
+      const htmlDir = document.documentElement.dir || 'ltr';
+      // Check both dir attribute AND lang for RTL detection
+      // dir="rtl" is the most reliable indicator
+      const isRTL = htmlDir === 'rtl' || htmlLang === 'he' || htmlLang === 'ar';
+      
+      criticalCSS.textContent = `
+        /* Hide mobile buttons on desktop, show only on mobile */
+        @media (min-width: 769px) {
+          .mobile-toggle,
+          .phone-header-btn {
+            display: none !important;
+          }
+        }
+        
+        /* Show and position mobile buttons correctly on mobile */
+        @media (max-width: 768px) {
+          .mobile-toggle,
+          .phone-header-btn {
+            position: absolute !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            z-index: 1001 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            border: none !important;
+            cursor: pointer !important;
+            padding: 6px !important;
+            background: none !important;
+            color: var(--nav-text, var(--text-light)) !important;
+          }
+          
+          /* LTR positioning (default): hamburger LEFT, phone RIGHT */
+          html:not([dir="rtl"]):not([lang="he"]):not([lang="ar"]) .mobile-toggle,
+          html[dir="ltr"] .mobile-toggle {
+            left: 12px !important;
+            right: auto !important;
+          }
+          html:not([dir="rtl"]):not([lang="he"]):not([lang="ar"]) .phone-header-btn,
+          html[dir="ltr"] .phone-header-btn {
+            right: 12px !important;
+            left: auto !important;
+          }
+          
+          /* RTL positioning: hamburger RIGHT, phone LEFT */
+          html[dir="rtl"] .mobile-toggle,
+          html[lang="he"] .mobile-toggle,
+          html[lang="ar"] .mobile-toggle {
+            right: 12px !important;
+            left: auto !important;
+          }
+          html[dir="rtl"] .phone-header-btn,
+          html[lang="he"] .phone-header-btn,
+          html[lang="ar"] .phone-header-btn {
+            left: 12px !important;
+            right: auto !important;
+          }
+          
+          /* CRITICAL: Ensure nav-container has min-height on mobile */
+          /* All children are positioned absolutely/fixed on mobile, so height:auto collapses to 0 */
+          .nav-container {
+            min-height: 70px !important;
+            position: relative !important;
+          }
+          
+          /* Ensure SVG icons are properly sized and inherit color */
+          .mobile-toggle svg,
+          .phone-header-btn svg {
+            width: 24px !important;
+            height: 24px !important;
+            /* Don't force display - let JavaScript control hamburger/close toggle */
+          }
+          
+          /* Reset nav-cta-container on mobile - remove desktop box-shadow/padding */
+          /* that creates a visible ghost box when CTA button is hidden */
+          .nav-cta-container {
+            box-shadow: none !important;
+            padding: 0 !important;
+          }
+          
+          /* Hide nav-cta-container entirely on mobile when there's no lang-switcher */
+          /* (only the CTA button is inside, and it's hidden on mobile) */
+          .nav-cta-container:not(:has(.lang-switcher)) {
+            display: none !important;
+          }
+          
+          /* CRITICAL: Prevent hero image fade gradient from bleeding over headline text */
+          /* The .image-fade-gradient has bottom: -30px (extends below parent) */
+          /* On mobile stacked layout, this overlaps the h1 text below the image */
+          .hero-image-column {
+            overflow: hidden !important;
+          }
+          .image-fade-gradient {
+            bottom: 0 !important;
+          }
+          
+          /* Hide desktop language switcher on mobile - hamburger menu handles it */
+          /* High specificity to override stored CSS */
+          .lang-switcher,
+          .nav-cta-container .lang-switcher,
+          .nav-container .lang-switcher,
+          .navbar .lang-switcher,
+          .navbar .nav-cta-container .lang-switcher {
+            display: none !important;
+          }
+        }
+      `;
+      
+      // Remove existing fix if present and inject new one
+      const existing = document.getElementById('zappy-mobile-nav-fix');
+      if (existing) existing.remove();
+      document.head.appendChild(criticalCSS);
+      
+      console.log('[Navbar] Critical CSS injected for mobile nav positioning');
+      
+      // ONLY apply inline positioning styles on mobile viewport
+      // On desktop, the CSS handles hiding these buttons with display: none
+      // Inline styles were breaking desktop layout by overriding CSS
+      const isMobileViewport = window.innerWidth <= 768;
+      
+      if (mobileToggle) {
+        // Icon sizing applies to all viewports for consistency
+        const hamburgerIcon = mobileToggle.querySelector('.hamburger-icon');
+        const closeIcon = mobileToggle.querySelector('.close-icon');
+        
+        if (hamburgerIcon) {
+          hamburgerIcon.style.setProperty('width', '24px', 'important');
+          hamburgerIcon.style.setProperty('height', '24px', 'important');
+          hamburgerIcon.style.setProperty('display', 'block', 'important'); // Show hamburger by default
+        }
+        if (closeIcon) {
+          closeIcon.style.setProperty('width', '24px', 'important');
+          closeIcon.style.setProperty('height', '24px', 'important');
+          closeIcon.style.setProperty('display', 'none', 'important'); // Hide close icon by default
+        }
+        
+        // ONLY set positioning inline styles on mobile
+        if (isMobileViewport) {
+          mobileToggle.style.setProperty('position', 'absolute', 'important');
+          mobileToggle.style.setProperty('top', '50%', 'important');
+          mobileToggle.style.setProperty('transform', 'translateY(-50%)', 'important');
+          mobileToggle.style.setProperty('z-index', '1001', 'important');
+          
+          // Clear any inline left/right so CSS can take over based on html[dir]
+          mobileToggle.style.removeProperty('left');
+          mobileToggle.style.removeProperty('right');
+          
+          console.log('[Navbar] Mobile toggle positioning applied (mobile viewport)');
+        } else {
+          // On desktop, clear any positioning styles to let CSS handle it
+          mobileToggle.style.removeProperty('position');
+          mobileToggle.style.removeProperty('top');
+          mobileToggle.style.removeProperty('transform');
+          mobileToggle.style.removeProperty('z-index');
+          mobileToggle.style.removeProperty('left');
+          mobileToggle.style.removeProperty('right');
+          console.log('[Navbar] Desktop viewport - cleared mobile toggle inline positioning');
+        }
+      }
+      
+      if (phoneBtn) {
+        // Icon sizing applies to all viewports
+        const phoneIcon = phoneBtn.querySelector('svg');
+        if (phoneIcon) {
+          phoneIcon.style.width = '24px';
+          phoneIcon.style.height = '24px';
+          phoneIcon.setAttribute('width', '24');
+          phoneIcon.setAttribute('height', '24');
+        }
+        
+        // ONLY set positioning inline styles on mobile
+        if (isMobileViewport) {
+          phoneBtn.style.setProperty('position', 'absolute', 'important');
+          phoneBtn.style.setProperty('top', '50%', 'important');
+          phoneBtn.style.setProperty('transform', 'translateY(-50%)', 'important');
+          phoneBtn.style.setProperty('z-index', '1001', 'important');
+          
+          // Clear any inline left/right so CSS can take over based on html[dir]
+          phoneBtn.style.removeProperty('left');
+          phoneBtn.style.removeProperty('right');
+          
+          console.log('[Navbar] Phone button positioning applied (mobile viewport)');
+        } else {
+          // On desktop, clear any positioning styles to let CSS handle it
+          phoneBtn.style.removeProperty('position');
+          phoneBtn.style.removeProperty('top');
+          phoneBtn.style.removeProperty('transform');
+          phoneBtn.style.removeProperty('z-index');
+          phoneBtn.style.removeProperty('left');
+          phoneBtn.style.removeProperty('right');
+          console.log('[Navbar] Desktop viewport - cleared phone button inline positioning');
+        }
+      }
+    } else {
+      console.log('[Navbar] Could not parse background color:', bgColor);
+    }
+    
+    // MOBILE MENU TOGGLE
+    // Re-query in case DOM changed (mobileToggle already declared at top of function)
+    mobileToggle = document.getElementById('mobileToggle') ||
+                   document.querySelector('.mobile-toggle') ||
+                   document.querySelector('.hamburger') ||
+                   document.querySelector('.hamburger-menu') ||
+                   document.querySelector('.menu-toggle') ||
+                   document.querySelector('.burger-menu') ||
+                   document.querySelector('[aria-label="Menu"]') ||
+                   document.querySelector('[aria-label="תפריט"]');
+    
+    // EXPANDED SEARCH: Find nav menu by ID or class
+    const navMenu = document.getElementById('navMenu') ||
+                  document.querySelector('.nav-menu') ||
+                  document.querySelector('.nav-links') ||
+                  document.querySelector('nav ul:not(.submenu)');
+    
+    if (!mobileToggle || !navMenu) {
+      console.log('[Navbar] Mobile toggle or menu not found:', { toggle: !!mobileToggle, menu: !!navMenu });
+      return;
+    }
+    
+    // Ensure navMenu has ID for CSS targeting
+    if (!navMenu.id) {
+      navMenu.id = 'navMenu';
+    }
+    
+    console.log('[Navbar] Initializing mobile menu...');
+    
+    // Remove any existing event listeners by cloning the button
+    const newToggle = mobileToggle.cloneNode(true);
+    mobileToggle.parentNode.replaceChild(newToggle, mobileToggle);
+    
+    // Toggle menu on button click - use newToggle now
+    newToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const hamburgerIcon = this.querySelector('.hamburger-icon');
+      const closeIcon = this.querySelector('.close-icon');
+      const isActive = navMenu.classList.contains('active');
+      
+      if (isActive) {
+        // Close menu
+        navMenu.classList.remove('active');
+        if (hamburgerIcon) hamburgerIcon.style.setProperty('display', 'block', 'important');
+        if (closeIcon) closeIcon.style.setProperty('display', 'none', 'important');
+        document.body.style.overflow = '';
+        console.log('[Navbar] Menu closed');
+      } else {
+        // Open menu
+        navMenu.classList.add('active');
+        if (hamburgerIcon) hamburgerIcon.style.setProperty('display', 'none', 'important');
+        if (closeIcon) closeIcon.style.setProperty('display', 'block', 'important');
+        document.body.style.overflow = 'hidden';
+        console.log('[Navbar] Menu opened');
+      }
+    });
+    
+    // Close menu when clicking nav links (but NOT dropdown toggles)
+    const navLinks = navMenu.querySelectorAll('a');
+    navLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        // Don't close if it's a dropdown child (unless it's a real navigation link)
+        if (this.getAttribute('href') === '#') return;
+        
+        const hamburgerIcon = newToggle.querySelector('.hamburger-icon');
+        const closeIcon = newToggle.querySelector('.close-icon');
+        
+        navMenu.classList.remove('active');
+        if (hamburgerIcon) hamburgerIcon.style.setProperty('display', 'block', 'important');
+        if (closeIcon) closeIcon.style.setProperty('display', 'none', 'important');
+        document.body.style.overflow = '';
+        console.log('[Navbar] Menu closed (link clicked)');
+      });
+    });
+    
+    // DROPDOWN MENU TOGGLE (for mobile and touch devices)
+    var dropdownToggles = navMenu.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(function(toggle) {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var parent = this.closest('.nav-dropdown');
+        if (!parent) return;
+        
+        // Close other open dropdowns at the same level
+        var siblings = parent.parentNode.querySelectorAll('.nav-dropdown.open');
+        siblings.forEach(function(sib) {
+          if (sib !== parent) sib.classList.remove('open');
+        });
+        
+        parent.classList.toggle('open');
+        console.log('[Navbar] Dropdown toggled:', parent.classList.contains('open') ? 'open' : 'closed');
+      });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-dropdown')) {
+        var openDropdowns = document.querySelectorAll('.nav-dropdown.open');
+        openDropdowns.forEach(function(dd) { dd.classList.remove('open'); });
+      }
+    });
+    
+    console.log('[Navbar] Dropdown handlers initialized for ' + dropdownToggles.length + ' dropdowns');
+    
+    // Phone button functionality (phoneBtn already declared at top of function)
+    if (phoneBtn) {
+      phoneBtn.addEventListener('click', function() {
+        // Get phone number from placeholder in page or use default
+        const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
+        const phoneNumber = phoneLinks.length > 0 
+          ? phoneLinks[0].getAttribute('href').replace('tel:', '')
+          : '[business_phone]';
+        
+        window.location.href = 'tel:' + phoneNumber;
+        console.log('[Navbar] Phone button clicked');
+      });
+    }
+    
+    console.log('[Navbar] Mobile menu initialized successfully');
+    
+    // === WHATSAPP BUTTON VISIBILITY FIX ===
+    // Ensure WhatsApp floating button is hidden on desktop and visible on mobile
+    // IMPORTANT: Only target the floating button by its class, NOT generic wa.me links
+    const handleWhatsAppVisibility = function() {
+      const whatsappBtn = document.querySelector('.whatsapp-float');
+      if (whatsappBtn) {
+        const isDesktop = window.innerWidth >= 769;
+        if (isDesktop) {
+          whatsappBtn.style.setProperty('display', 'none', 'important');
+          whatsappBtn.style.setProperty('visibility', 'hidden', 'important');
+          whatsappBtn.style.setProperty('opacity', '0', 'important');
+          whatsappBtn.style.setProperty('pointer-events', 'none', 'important');
+          console.log('[WhatsApp] Button hidden on desktop');
+        } else {
+          whatsappBtn.style.removeProperty('display');
+          whatsappBtn.style.removeProperty('visibility');
+          whatsappBtn.style.removeProperty('opacity');
+          whatsappBtn.style.removeProperty('pointer-events');
+          console.log('[WhatsApp] Button visible on mobile');
+        }
+      }
+    };
+    
+    // Run on load
+    handleWhatsAppVisibility();
+    
+    // Run on resize with debouncing
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(handleWhatsAppVisibility, 100);
+    });
+  });
+})();
+
+</script>
+  
+  <main>
+    <section class="index-hero-section" data-layout-spec="בית-hero" dir="rtl" data-hero-type="fullscreen-scrim">
+  <!-- Background Image Layer -->
+  <div class="index-hero-bg">
+    <img data-hero-bg="true" data-placeholder="index-hero-image-1" data-context="Wide-angle bright alpine hiking trail scene in Israel or similar Mediterranean mountain landscape, shot in golden morning light. Hikers with backpacks on a rocky trail with open sky, rolling hills, and lush green-brown terrain stretching into the distance. Vivid daylight photography with strong depth and natural colors — greens, ochres, and blue sky. No text, no logos. Cinematic landscape orientation, highly detailed nature photography." width="1440" height="900" src="/assets/site-index-hero-image-1.webp" alt="נוף שביל הליכה בטבע הפתוח עם שמיים כחולים ושדות ירוקים">
+  </div>
+
+  <!-- Scrim Overlay -->
+  <div class="index-hero-scrim" aria-hidden="true"></div>
+
+  <!-- Content Card -->
+  <div class="index-hero-container">
+    <div class="index-hero-card">
+      <span class="index-hero-eyebrow">ציוד לכל הרפתקה</span>
+      <h1 class="index-hero-h1">TERRA — המסע שלך מתחיל כאן</h1>
+      <h3 class="index-hero-h3">מטיול בוקר קצר ועד טרק רב-יומי בשטח קשה</h3>
+      <p class="index-hero-body">אנחנו מביאים לך ידע מקצועי, ציוד אמין ועצות שדה אמיתיות — לכל סוג שטח ומזג אוויר. בין אם אתה מטייל ראשון או מתנסה ותיק, תמצא כאן את כל מה שצריך לצאת לדרך בביטחון.</p>
+      <div class="index-hero-cta-row">
+        <a href="/contact" class="index-hero-btn-primary">צרו קשר</a>
+        <a href="/field-guide" class="index-hero-btn-secondary">מדריך השדה</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Divider: Contour mist transition -->
+  <div class="index-hero-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Mist layer 1 -->
+      <path d="M0,100 L0,68 Q80,58 160,65 T320,60 Q400,55 480,63 T640,57 Q720,62 800,58 T960,64 Q1040,56 1120,62 T1280,58 Q1360,63 1440,60 L1440,100 Z" fill="#FCFBF8"></path>
+      <!-- Mist layer 2 -->
+      <path d="M0,100 L0,76 Q90,68 180,74 T360,70 Q450,65 540,72 T720,67 Q810,73 900,69 T1080,74 Q1170,68 1260,73 T1440,70 L1440,100 Z" fill="#FCFBF8"></path>
+      <!-- Solid fill base -->
+      <path d="M0,100 L0,84 Q72,78 144,83 Q216,88 288,80 T432,82 Q504,78 576,84 T720,80 Q792,85 864,81 T1008,83 Q1080,79 1152,84 T1296,81 Q1368,85 1440,82 L1440,100 Z" fill="#FCFBF8"></path>
+    </svg>
+  </div>
+</section>
+
+    <section class="featured-products-section" id="featured-products" data-zappy-dynamic="true">
+      <div class="container">
+        <h2 class="section-title">מוצרים מומלצים</h2>
+        <div class="product-grid featured-grid" id="zappy-featured-products">
+          <div class="loading-products">טוען מוצרים...</div>
+        </div>
+        <div class="view-all-products">
+          <a href="/products" class="btn btn-primary">צפה בכל המוצרים →</a>
+        </div>
+      </div>
+    </section>
+  
+
+    <section class="featured-categories-section" id="featured-categories" data-zappy-dynamic="true">
+      <div class="container">
+        <h2 class="section-title">קנו לפי קטגוריה</h2>
+        <div class="category-blocks" id="zappy-featured-categories">
+          <div class="loading-categories">טוען מוצרים...</div>
+        </div>
+      </div>
+    </section>
+  
+
+<section class="index-features-section" data-layout-spec="בית-features" dir="rtl">
+  <div class="index-features-container">
+    <div class="index-features-intro">
+      <span class="index-features-eyebrow">המומחיות שלנו</span>
+      <h2 class="index-features-heading">ציוד לכל סוג של הרפתקה</h2>
+      <p class="index-features-subheading">ב-TERRA, חנות ציוד לטיולים, אנחנו מאמינים שהכנה נכונה היא המפתח לטיול מוצלח. בחרנו לסייע לכם בכל סוג של יציאה לטבע — ממסלול יום ועד מסע ארוך.</p>
+    </div>
+
+    <div class="index-features-grid">
+
+      <article class="index-feature-card">
+        <div class="index-feature-icon-wrap">
+          <svg data-element-type="icon" data-icon-type="svg" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="18" r="14"></circle>
+            <path d="M18 8 L18 18 L24 22"></path>
+            <circle cx="10" cy="14" r="1.5" fill="currentColor" stroke="none"></circle>
+            <circle cx="26" cy="22" r="1.5" fill="currentColor" stroke="none"></circle>
+            <path d="M10 14 Q14 18 18 18 Q22 18 26 22" stroke-dasharray="2 2"></path>
+          </svg>
+        </div>
+        <div class="index-feature-content">
+          <h3 class="index-feature-title">טיול יום</h3>
+          <p class="index-feature-desc">מסלולי יום דורשים ציוד קל, יעיל ונוח לנשיאה. אנחנו מסייעים בבחירת תרמיל מתאים, הנעלה תומכת, בגדי שכבות, מערכת הידרציה ומזון שדה — הכל לפי אורך המסלול ועונת השנה.</p>
+          <ul class="index-feature-list">
+            <li><i class="fas fa-check"></i><span>תרמילי יום קלים</span></li>
+            <li><i class="fas fa-check"></i><span>הידרציה ותזונת שדה</span></li>
+            <li><i class="fas fa-check"></i><span>בגדים טכניים לנוחות מקסימלית</span></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="index-feature-card">
+        <div class="index-feature-icon-wrap">
+          <svg data-element-type="icon" data-icon-type="svg" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 28 L18 8 L30 28 Z"></path>
+            <path d="M12 28 L12 20 Q18 16 24 20 L24 28"></path>
+            <path d="M4 28 L32 28"></path>
+            <circle cx="18" cy="14" r="1.5" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </div>
+        <div class="index-feature-content">
+          <h3 class="index-feature-title">קמפינג</h3>
+          <p class="index-feature-desc">לינה בטבע מחייבת תכנון מדויק של מערכת השינה, הגנה מפני מזג אוויר ויכולת בישול עצמאית. נסייע לכם לבחור אוהל, שק שינה, כרית ומחצלת מבידוד, ולהרכיב מטבח שדה קומפקטי ויעיל.</p>
+          <ul class="index-feature-list">
+            <li><i class="fas fa-check"></i><span>אוהלים ושקי שינה</span></li>
+            <li><i class="fas fa-check"></i><span>מטבח שדה וציוד בישול</span></li>
+            <li><i class="fas fa-check"></i><span>הגנת מזג אוויר ובידוד</span></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="index-feature-card">
+        <div class="index-feature-icon-wrap">
+          <svg data-element-type="icon" data-icon-type="svg" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="13" cy="10" r="3"></circle>
+            <circle cx="23" cy="10" r="2.2"></circle>
+            <path d="M10 14 Q10 22 8 28"></path>
+            <path d="M16 14 Q17 20 16 28"></path>
+            <path d="M20 13 Q20 21 19 28"></path>
+            <path d="M26 13 Q26 21 25 28"></path>
+            <path d="M8 20 Q12 22 16 20"></path>
+            <path d="M19 20 Q22 22 25 20"></path>
+          </svg>
+        </div>
+        <div class="index-feature-content">
+          <h3 class="index-feature-title">טיול משפחתי</h3>
+          <p class="index-feature-desc">יציאה לטבע עם הילדים דורשת גישה שונה — ציוד קל לנשיאה, בטיחות מוגברת ונוחות לכל הגילאים. אנחנו מציעים פתרונות לנשיאת ילדים קטנים, ציוד מותאם גיל ומוצרי הגנה מפני שמש וחרקים.</p>
+          <ul class="index-feature-list">
+            <li><i class="fas fa-check"></i><span>ציוד מותאם לילדים</span></li>
+            <li><i class="fas fa-check"></i><span>נשיאת תינוקות ופעוטות</span></li>
+            <li><i class="fas fa-check"></i><span>הגנת שמש, חרקים ובטיחות</span></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="index-feature-card">
+        <div class="index-feature-icon-wrap">
+          <svg data-element-type="icon" data-icon-type="svg" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 26 Q10 20 14 22 Q18 24 20 18 Q22 12 26 14 Q30 16 30 10"></path>
+            <circle cx="6" cy="26" r="2" fill="currentColor" stroke="none"></circle>
+            <circle cx="30" cy="10" r="2" fill="currentColor" stroke="none"></circle>
+            <path d="M14 22 L13 28"></path>
+            <path d="M20 18 L19 28"></path>
+            <path d="M26 14 L25 28"></path>
+            <path d="M4 28 L32 28"></path>
+          </svg>
+        </div>
+        <div class="index-feature-content">
+          <h3 class="index-feature-title">טרקינג ארוך טווח</h3>
+          <p class="index-feature-desc">מסעות מרובי ימים דורשים תכנון מקיף: נוחות נשיאה לאורך ימים, ניווט מדויק, בגדי שכבות לתנאי מזג אוויר משתנים ומערכת שינה אמינה. נסייע לכם לבנות תרמיל שלם לכל מסע, כולל ציוד חירום ושרידות.</p>
+          <ul class="index-feature-list">
+            <li><i class="fas fa-check"></i><span>תרמילי גב ארגונומיים</span></li>
+            <li><i class="fas fa-check"></i><span>ניווט, מפות וציוד חירום</span></li>
+            <li><i class="fas fa-check"></i><span>בגדי שכבות ומערכות שינה</span></li>
+          </ul>
+        </div>
+      </article>
+
+    </div>
+  </div>
+
+  <div class="index-features-divider-wrapper" aria-hidden="true">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,90 0,30 1200,0 1200,90" fill="#F4F1EA"></polygon>
+      <line x1="0" y1="30" x2="1200" y2="0" stroke="#2F6B3B" stroke-width="1.5" opacity="0.35"></line>
+    </svg>
+  </div>
+
+</section>
+
+<section class="index-comparison-section" data-layout-spec="בית-comparison" dir="rtl">
+  <div class="index-comparison-container">
+
+    <!-- START column: editorial content -->
+    <div class="index-comparison-editorial">
+      <span class="index-comparison-label">מדריך הציוד שלך</span>
+      <h2 class="index-comparison-heading">הטיול שלך מתחיל בהחלטה הנכונה</h2>
+      <p class="index-comparison-intro">ב-TERRA אנחנו מאמינים שהציוד הנכון הוא זה שמתאים בדיוק לסוג ההרפתקה שלך — לא יותר ולא פחות. בין אם מדובר בטיול יום קל ביער ובין אם במסע רב-ימי בשטח מאתגר, הבנת הצרכים שלך היא הצעד הראשון לבחירה בטוחה וחכמה.</p>
+
+      <div class="index-comparison-micro-blocks">
+        <div class="index-comparison-micro-item">
+          <div class="index-comparison-micro-icon">
+            <svg data-element-type="icon" data-icon-type="svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="index-comparison-micro-content">
+            <h3>משך הטיול</h3>
+            <p>טיול יום אחד דורש ציוד שונה לחלוטין ממסע לילה. ככל שהטיול ארוך יותר, כך גדל הצורך בשכבות, מזון, ומשקל נסבל.</p>
+          </div>
+        </div>
+
+        <div class="index-comparison-micro-item">
+          <div class="index-comparison-micro-icon">
+            <svg data-element-type="icon" data-icon-type="svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C8 2 4 6 4 10c0 6 8 12 8 12s8-6 8-12c0-4-4-8-8-8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
+          <div class="index-comparison-micro-content">
+            <h3>חשיפה לתנאי מזג אוויר</h3>
+            <p>מסלולים פתוחים, גובה רב, או עונות קיצוניות מחייבים בידוד תרמי, הגנה מגשם ושכבות רוח שמותאמות לסביבה.</p>
+          </div>
+        </div>
+
+        <div class="index-comparison-micro-item">
+          <div class="index-comparison-micro-icon">
+            <svg data-element-type="icon" data-icon-type="svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+          </div>
+          <div class="index-comparison-micro-content">
+            <h3>סגנון הנשיאה</h3>
+            <p>תרמיל קטן לטיול יום, מסגרת פנימית לשטח מאתגר, או מסגרת חיצונית לעומסים כבדים — הבחירה משפיעה על כל הגוף.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="index-comparison-image-wrapper">
+        <img data-placeholder="index-comparison-image-1" data-context="A hiker in nature standing at a trail junction, looking at a map, wearing a backpack and outdoor clothing. Daylight, Israeli landscape with rocky terrain and green vegetation, calm editorial mood." width="480" height="300" src="/assets/site-index-comparison-image-1.webp" alt="מטייל בשטח בוחר ציוד מתאים לטיול">
+      </div>
+    </div>
+
+    <!-- END column: comparison matrix -->
+    <div class="index-comparison-table-col">
+      <div class="index-comparison-table-wrapper">
+        <table class="index-comparison-table" role="table" aria-label="השוואת ציוד לפי סוג טיול">
+          <thead>
+            <tr>
+              <th class="index-comparison-th index-comparison-th-feature" scope="col">קריטריון</th>
+              <th class="index-comparison-th" scope="col">
+                <div class="index-comparison-col-header">
+                  <span class="index-comparison-col-icon">
+                    <svg data-element-type="icon" data-icon-type="svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </span>
+                  <span>טיול יום</span>
+                </div>
+              </th>
+              <th class="index-comparison-th" scope="col">
+                <div class="index-comparison-col-header">
+                  <span class="index-comparison-col-icon">
+                    <svg data-element-type="icon" data-icon-type="svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                  </span>
+                  <span>לילה בשטח</span>
+                </div>
+              </th>
+              <th class="index-comparison-th" scope="col">
+                <div class="index-comparison-col-header">
+                  <span class="index-comparison-col-icon">
+                    <svg data-element-type="icon" data-icon-type="svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                  </span>
+                  <span>מסע מאתגר</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="index-comparison-row">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">מרחק מוצע</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">עד 15 ק"מ</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">15–30 ק"מ</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-value">30+ ק"מ</span></td>
+            </tr>
+            <tr class="index-comparison-row index-comparison-row-alt">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">נפח תרמיל</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">10–25 ל׳</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">30–50 ל׳</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-value">55–80 ל׳</span></td>
+            </tr>
+            <tr class="index-comparison-row">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">מקום לינה</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value index-comparison-cell-na">—</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">אוהל קל</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-value">אוהל 4 עונות</span></td>
+            </tr>
+            <tr class="index-comparison-row index-comparison-row-alt">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">בידוד תרמי</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">שכבה בסיסית</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">שלוש שכבות</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-value">שכבות מלאות</span></td>
+            </tr>
+            <tr class="index-comparison-row">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">ניווט</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">מפה / אפליקציה</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">מצפן + מפה</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-value">GPS ייעודי</span></td>
+            </tr>
+            <tr class="index-comparison-row index-comparison-row-alt">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">הגנה מגשם</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">קל / בסיסי</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-value">ג׳קט גשם</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-value">מלא + גטרות</span></td>
+            </tr>
+            <tr class="index-comparison-row">
+              <td class="index-comparison-td index-comparison-td-feature">
+                <span class="index-comparison-feature-label">רמת ניסיון</span>
+              </td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-badge index-comparison-badge-beginner">מתחיל</span></td>
+              <td class="index-comparison-td"><span class="index-comparison-cell-badge index-comparison-badge-mid">בינוני</span></td>
+              <td class="index-comparison-td index-comparison-td-highlight"><span class="index-comparison-cell-badge index-comparison-badge-advanced">מנוסה</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="index-comparison-table-footer">
+        <p>לא בטוח מה מתאים לך? הצוות שלנו ב-TERRA ישמח לעזור לך לתכנן את הציוד האידיאלי לכל מסע.</p>
+        <a href="/contact" class="btn-primary index-comparison-cta">דברו איתנו</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom divider: shallow arc transitioning to dark reviews section -->
+  <div class="index-comparison-divider-wrapper">
+    <div class="index-comparison-ochre-rule"></div>
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,70 L0,42 Q300,10 600,28 Q900,46 1200,20 L1200,70 Z" fill="var(--bg-dark)"></path>
+    </svg>
+  </div>
+</section>
+
+<section class="index-reviews-section" data-layout-spec="בית-reviews" dir="rtl">
+  <!-- Contour line background decoration -->
+  <div class="index-reviews-section__contour" aria-hidden="true">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="rgba(252,251,248,0.04)" stroke-width="1.5">
+        <path d="M0,120 Q200,90 400,130 T800,110 T1200,125"></path>
+        <path d="M0,180 Q200,150 400,190 T800,170 T1200,185"></path>
+        <path d="M0,240 Q200,210 400,250 T800,230 T1200,245"></path>
+        <path d="M0,300 Q200,270 400,310 T800,290 T1200,305"></path>
+        <path d="M0,360 Q200,330 400,370 T800,350 T1200,365"></path>
+        <path d="M0,420 Q200,390 400,430 T800,410 T1200,425"></path>
+        <path d="M0,480 Q200,450 400,490 T800,470 T1200,485"></path>
+        <path d="M100,60 Q300,30 500,70 T900,50 T1200,65"></path>
+        <path d="M-50,540 Q150,510 350,550 T750,530 T1200,545"></path>
+        <ellipse cx="150" cy="300" rx="300" ry="200" stroke="rgba(252,251,248,0.025)"></ellipse>
+        <ellipse cx="1050" cy="300" rx="280" ry="180" stroke="rgba(252,251,248,0.025)"></ellipse>
+        <ellipse cx="600" cy="300" rx="350" ry="220" stroke="rgba(252,251,248,0.02)"></ellipse>
+      </g>
+    </svg>
+  </div>
+
+  <div class="index-reviews-section__container">
+    <!-- Section header -->
+    <header class="index-reviews-section__header">
+      <span class="index-reviews-section__label">מה אומרים המטיילים</span>
+      <h2 class="index-reviews-section__title">חוויות מהשטח</h2>
+      <p class="index-reviews-section__subtitle">לקוחות TERRA — מתחילים, משפחות ומטיילים מנוסים — משתפים איך הציוד הנכון שינה את המסע שלהם.</p>
+    </header>
+
+    <nav class="zappy-catalog-menu rtl" id="zappy-catalog-menu" dir="rtl" style="display:none">
+      <div class="catalog-menu-container">
+        <a href="/products" class="catalog-menu-item catalog-menu-all">כל המוצרים</a>
+        <div class="catalog-menu-categories" id="zappy-category-links">
+          <!-- Categories will be loaded dynamically -->
+        </div>
+      </div>
+    </nav>
+  
+
+    <!-- Testimonials grid -->
+    <div class="index-reviews-section__grid">
+
+      <!-- Card 1: Beginner hiker -->
+      <article class="index-reviews-section__card">
+        <div class="index-reviews-section__card-accent-line"></div>
+        <div class="index-reviews-section__quote-mark" aria-hidden="true">
+          <svg data-element-type="icon" data-icon-type="svg" width="36" height="28" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 28V17.6C0 12.267 1.333 8.133 4 5.2C6.667 2.267 10.533 0.533 15.6 0L17.2 3.6C14.267 4.267 12.067 5.467 10.6 7.2C9.133 8.933 8.4 11.2 8.4 14H15.6V28H0ZM20.4 28V17.6C20.4 12.267 21.733 8.133 24.4 5.2C27.067 2.267 30.933 0.533 36 0L37.6 3.6C34.667 4.267 32.467 5.467 31 7.2C29.533 8.933 28.8 11.2 28.8 14H36V28H20.4Z" fill="currentColor"></path>
+          </svg>
+        </div>
+        <blockquote class="index-reviews-section__quote">
+          <p>"הגעתי לחנות ציוד לטיולים של TERRA בלי שום ניסיון. הצוות עזר לי להבין בדיוק מה אני צריכה לטיול הראשון שלי — תיק גב בגודל הנכון, נעליים שמתאימות לרגל שלי, ורשימת ציוד ברורה. יצאתי עם ביטחון שלא ידעתי שיש לי."</p>
+        </blockquote>
+        <footer class="index-reviews-section__card-footer">
+          <div class="index-reviews-section__avatar" aria-hidden="true">
+            <svg data-element-type="icon" data-icon-type="svg" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="20" fill="rgba(47,107,59,0.25)"></circle>
+              <circle cx="20" cy="16" r="7" fill="rgba(252,251,248,0.5)"></circle>
+              <ellipse cx="20" cy="34" rx="12" ry="8" fill="rgba(252,251,248,0.5)"></ellipse>
+            </svg>
+          </div>
+          <div class="index-reviews-section__author-info">
+            <strong class="index-reviews-section__author-name">מיכל ר.</strong>
+            <span class="index-reviews-section__author-type">מטיילת מתחילה</span>
+          </div>
+          <div class="index-reviews-section__stars" aria-label="דירוג 5 מתוך 5">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Card 2: Family camper -->
+      <article class="index-reviews-section__card index-reviews-section__card--featured">
+        <div class="index-reviews-section__card-accent-line index-reviews-section__card-accent-line--accent"></div>
+        <div class="index-reviews-section__quote-mark" aria-hidden="true">
+          <svg data-element-type="icon" data-icon-type="svg" width="36" height="28" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 28V17.6C0 12.267 1.333 8.133 4 5.2C6.667 2.267 10.533 0.533 15.6 0L17.2 3.6C14.267 4.267 12.067 5.467 10.6 7.2C9.133 8.933 8.4 11.2 8.4 14H15.6V28H0ZM20.4 28V17.6C20.4 12.267 21.733 8.133 24.4 5.2C27.067 2.267 30.933 0.533 36 0L37.6 3.6C34.667 4.267 32.467 5.467 31 7.2C29.533 8.933 28.8 11.2 28.8 14H36V28H20.4Z" fill="currentColor"></path>
+          </svg>
+        </div>
+        <blockquote class="index-reviews-section__quote">
+          <p>"יצאנו לקמפינג משפחתי עם שלושה ילדים בפעם הראשונה. האוהל שרכשנו עמד בגשם כבד כל הלילה, והשקי שינה שהומלצו לנו היו חמים ונוחים גם לילדים הקטנים. TERRA הפכה חוויה מלחיצה לרגע שכל המשפחה תזכור."</p>
+        </blockquote>
+        <footer class="index-reviews-section__card-footer">
+          <div class="index-reviews-section__avatar" aria-hidden="true">
+            <svg data-element-type="icon" data-icon-type="svg" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="20" fill="rgba(217,164,65,0.25)"></circle>
+              <circle cx="20" cy="16" r="7" fill="rgba(252,251,248,0.5)"></circle>
+              <ellipse cx="20" cy="34" rx="12" ry="8" fill="rgba(252,251,248,0.5)"></ellipse>
+            </svg>
+          </div>
+          <div class="index-reviews-section__author-info">
+            <strong class="index-reviews-section__author-name">דני ואורית כ.</strong>
+            <span class="index-reviews-section__author-type">משפחה קמפינגיסטית</span>
+          </div>
+          <div class="index-reviews-section__stars" aria-label="דירוג 5 מתוך 5">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Card 3: Experienced trekker -->
+      <article class="index-reviews-section__card">
+        <div class="index-reviews-section__card-accent-line"></div>
+        <div class="index-reviews-section__quote-mark" aria-hidden="true">
+          <svg data-element-type="icon" data-icon-type="svg" width="36" height="28" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 28V17.6C0 12.267 1.333 8.133 4 5.2C6.667 2.267 10.533 0.533 15.6 0L17.2 3.6C14.267 4.267 12.067 5.467 10.6 7.2C9.133 8.933 8.4 11.2 8.4 14H15.6V28H0ZM20.4 28V17.6C20.4 12.267 21.733 8.133 24.4 5.2C27.067 2.267 30.933 0.533 36 0L37.6 3.6C34.667 4.267 32.467 5.467 31 7.2C29.533 8.933 28.8 11.2 28.8 14H36V28H20.4Z" fill="currentColor"></path>
+          </svg>
+        </div>
+        <blockquote class="index-reviews-section__quote">
+          <p>"אחרי שנים של טיולים בנגב ובגליל, אני יודע להבדיל בין ציוד אמיתי לשיווק ריק. ב-TERRA מצאתי מצפן, מגפיים ומעיל גשם שעמדו בתנאים קיצוניים. הידע של הצוות לגבי הציוד — לא רק המחיר — הוא מה שמחזיר אותי שוב ושוב."</p>
+        </blockquote>
+        <footer class="index-reviews-section__card-footer">
+          <div class="index-reviews-section__avatar" aria-hidden="true">
+            <svg data-element-type="icon" data-icon-type="svg" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="20" fill="rgba(47,107,59,0.25)"></circle>
+              <circle cx="20" cy="16" r="7" fill="rgba(252,251,248,0.5)"></circle>
+              <ellipse cx="20" cy="34" rx="12" ry="8" fill="rgba(252,251,248,0.5)"></ellipse>
+            </svg>
+          </div>
+          <div class="index-reviews-section__author-info">
+            <strong class="index-reviews-section__author-name">אמיר ש.</strong>
+            <span class="index-reviews-section__author-type">מטייל מנוסה · שביל ישראל</span>
+          </div>
+          <div class="index-reviews-section__stars" aria-label="דירוג 5 מתוך 5">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+        </footer>
+      </article>
+
+    </div>
+    <!-- /grid -->
+  </div>
+
+  <!-- Bottom torn-map divider transitioning to bg-light -->
+  <div class="index-reviews-section__divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,90 L0,38 Q15,32 30,40 T60,34 Q80,28 100,36 T140,30 Q165,24 190,33 T230,27 Q255,21 280,30 T320,24 Q345,18 370,28 T415,22 Q440,16 468,26 T510,20 Q535,14 562,24 T605,18 Q630,12 658,22 T700,17 Q725,11 752,21 T795,15 Q820,9 848,20 T890,14 Q915,8 942,19 T985,13 Q1010,7 1038,18 T1080,12 Q1105,6 1132,17 T1175,11 L1200,14 L1200,90 Z" fill="#F4F1EA"></path>
+      <!-- Subtle paper texture dots -->
+      <filter id="paperNoise">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"></feTurbulence>
+        <feColorMatrix type="saturate" values="0"></feColorMatrix>
+        <feBlend in="SourceGraphic" mode="multiply"></feBlend>
+      </filter>
+    </svg>
+  </div>
+
+</section>
+
+<section class="index-cta-section" data-layout-spec="בית-cta" dir="rtl">
+  <div class="index-cta-inner">
+    <div class="index-cta-content">
+      <span class="index-cta-eyebrow">מוכנים להרפתקה הבאה?</span>
+      <h2 class="index-cta-heading">בנו את ציוד הטיול הנכון לכם</h2>
+      <p class="index-cta-body">בין אם אתם יוצאים לטיול הראשון שלכם ובין אם אתם מטיילים ותיקים המחפשים לשדרג את הציוד — אנחנו כאן לעזור. הצוות של TERRA ילווה אתכם בבחירת הציוד המתאים בדיוק לסוג הטיול שאתם מתכננים, מהתרמיל ועד לנעליים.</p>
+      <div class="index-cta-buttons">
+        <a href="/contact" class="btn-primary index-cta-btn">דברו איתנו</a>
+        <a href="/field-guide" class="btn-secondary index-cta-btn">מדריך השטח</a>
+      </div>
+    </div>
+    <div class="index-cta-image-tile">
+      <img data-placeholder="index-cta-image-1" data-context="Wide open mountain trail in bright daylight, Israeli or Mediterranean landscape, hiker walking on a rocky path through green hills, golden hour light, editorial outdoor photography style, warm and inviting atmosphere" width="600" height="400" src="/assets/site-index-cta-image-1.webp" alt="נוף שביל הרים פתוח בשמש">
+    </div>
+  </div>
+</section>
+  </main>
+  
+  <footer class="site-footer" dir="rtl">
+  <div class="footer-inner">
+    <div class="footer-top">
+
+      <!-- Column 1: Company Info -->
+      <div class="footer-col footer-brand">
+        <a href="/" class="footer-logo-link">
+          <img class="logo" data-placeholder="logo" data-context="business logo" width="150" height="40" src="/assets/business-logo.webp" alt="TERRA">
+        </a>
+        <p class="footer-tagline">ציוד חוץ ואביזרי טיולים לכל הרפתקה — מהשביל הראשון ועד הפסגה.</p>
+        <div class="footer-social">
+          <a href="[facebook_handle]" aria-label="Facebook" class="social-link"><i class="fab fa-facebook-f"></i></a>
+          <a href="[instagram_handle]" aria-label="Instagram" class="social-link"><i class="fab fa-instagram"></i></a>
+          <a href="[whatsapp_handle]" aria-label="WhatsApp" class="social-link"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <!-- Column 2: Quick Links -->
+      <div class="footer-col">
+        <h3 class="footer-heading">ניווט מהיר</h3>
+        <ul class="footer-links">
+          <li><a href="/field-guide">מדריך שטח</a></li>
+          <li><a href="/about">אודות TERRA</a></li>
+          <li><a href="/contact">צור קשר</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 3: Contact Info -->
+      <div class="footer-col">
+        <h3 class="footer-heading">יצירת קשר</h3>
+        <ul class="footer-contact">
+          <li>
+            <span class="contact-icon"><i class="fas fa-envelope"></i></span>
+            <span class="contact-text"><a href="mailto:[business_email]">[business_email]</a></span>
+          </li>
+          <li>
+            <span class="contact-icon"><i class="fas fa-phone"></i></span>
+            <span class="contact-text"><a href="tel:[business_phone]">[business_phone]</a></span>
+          </li>
+          <li><a href="/"><span class="contact-icon"><i class="fas fa-map-marker-alt"></i></span>
+            <span class="contact-text">[business_address]</span></a></li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Decorative / Brand Accent -->
+      <div class="footer-col footer-accent-col">
+        <div class="footer-accent-card">
+          <i class="fas fa-mountain footer-accent-icon"></i>
+          <p class="footer-accent-text">כל מסע מתחיל בציוד הנכון. אנחנו כאן כדי להכין אותך.</p>
+          <a href="/field-guide" class="footer-cta-btn">מדריך השטח שלנו</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-divider"></div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+      <p class="footer-copyright">© 2026 TERRA. כל הזכויות שמורות.</p>
+      <div class="footer-legal">
+        <a href="/privacy">מדיניות פרטיות</a>
+        <span class="legal-sep" aria-hidden="true">·</span>
+        <a href="/terms">תנאי שימוש</a><span class="separator">|</span>
+            <a href="/return-policy" aria-label="מדיניות החזרות">
+              מדיניות החזרות
+            </a>
+        <span class="legal-sep" aria-hidden="true">·</span>
+        <a href="/accessibility">נגישות</a>
+        <span class="legal-sep" aria-hidden="true">·</span>
+        <a href="https://zappy5.com" target="_blank" class="zappy-attribution">נוצר באמצעות Zappy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+  
+  <a href="https://wa.me/[whatsapp_handle]" class="whatsapp-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  
+  <div data-integration="accessibility:toolbar"></div>
+
+    <script src="/script.js"></script>
+
+    <script id="zappy-mobile-submenu-script">
+    (function() {
+      function initMobileSubmenuToggles() {
+        if (window.innerWidth > 768) {
+          document.querySelectorAll('.mobile-submenu-toggle').forEach(function(btn) { btn.remove(); });
+          document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) { menu.classList.remove('mobile-expanded'); });
+          return;
+        }
+        var items = document.querySelectorAll('.nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu)');
+        items.forEach(function(li) {
+          if (li.querySelector('.mobile-submenu-toggle')) return;
+          var submenu = li.querySelector('.sub-menu');
+          var parentLink = li.querySelector(':scope > a');
+          if (!submenu || !parentLink) return;
+          var toggleBtn = document.createElement('button');
+          toggleBtn.className = 'mobile-submenu-toggle';
+          toggleBtn.setAttribute('aria-label', 'Toggle submenu');
+          toggleBtn.setAttribute('type', 'button');
+          parentLink.insertAdjacentElement('afterend', toggleBtn);
+          toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) {
+              if (menu !== submenu) { menu.classList.remove('mobile-expanded'); var t = menu.parentElement.querySelector('.mobile-submenu-toggle'); if(t) t.classList.remove('expanded'); }
+            });
+            submenu.classList.toggle('mobile-expanded');
+            toggleBtn.classList.toggle('expanded');
+          });
+        });
+      }
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileSubmenuToggles); }
+      else { initMobileSubmenuToggles(); }
+      var resizeTimer; window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(initMobileSubmenuToggles, 250); });
+      // Re-initialize when mobile menu becomes visible (MutationObserver)
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes') {
+            var target = mutation.target;
+            if (target.classList && (target.classList.contains('active') || target.classList.contains('open'))) {
+              setTimeout(initMobileSubmenuToggles, 100);
+            }
+          }
+        });
+      });
+      setTimeout(function() {
+        document.querySelectorAll('.mobile-menu, .nav-menu, #navMenu, nav').forEach(function(menu) {
+          observer.observe(menu, { attributes: true, attributeFilter: ['class', 'style'] });
+        });
+      }, 500);
+    })();
+    </script>
+
+    <script id="zappy-navbar-scroll-effect">
+    (function(){
+      var nb=document.querySelector('nav.navbar,.navbar:not(.zappy-catalog-menu)');
+      var cm=document.querySelector('.zappy-catalog-menu,#zappy-catalog-menu');
+      if(!nb)return;
+      var fb='rgba(252,251,248,0.85)';
+      var th=60;
+      var rs=getComputedStyle(document.documentElement);
+      var td=rs.getPropertyValue('--text-dark').trim()||'#1a1a1a';
+      var tl=rs.getPropertyValue('--text-light').trim()||'#ffffff';
+      var st=true?td:tl;
+      nb.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease,box-shadow 0.3s ease';
+      if(cm)cm.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease';
+      var neSel='a,.navbar-brand,.navbar-brand a,.dropdown-toggle,.mobile-toggle,.phone-header-btn,.mobile-hamburger-btn,.mobile-close-btn,.mobile-submenu-toggle,.nav-link';
+      var skipCls=['cart-link','login-link','nav-search-toggle','search-toggle'];
+      function sTC(c,clr){var els=c.querySelectorAll(neSel);for(var i=0;i<els.length;i++){var sk=false;if(els[i].closest('.sub-menu')||els[i].closest('.dropdown-menu')){sk=true;}for(var j=0;j<skipCls.length;j++){if(els[i].classList.contains(skipCls[j])){sk=true;break;}}if(!sk)els[i].style.setProperty('color',clr,'important');}}
+      function cTC(c){var els=c.querySelectorAll(neSel);for(var i=0;i<els.length;i++){if(els[i].closest('.sub-menu')||els[i].closest('.dropdown-menu'))continue;els[i].style.removeProperty('color');}}
+      function applyScrolled(){
+        nb.classList.add('scrolled');
+        if(window.innerWidth>768){
+          nb.style.setProperty('--frosted-text',st);
+          nb.style.setProperty('background-image','none','important');
+          nb.style.setProperty('background-color',fb,'important');
+          nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';
+          sTC(nb,st);
+        }
+        if(cm){cm.classList.add('scrolled');if(window.innerWidth>768){cm.style.setProperty('background',fb,'important');cm.style.setProperty('backdrop-filter','blur(12px)','important');cm.style.setProperty('-webkit-backdrop-filter','blur(12px)','important');sTC(cm,st);}}
+      }
+      function onS(){
+        if(window._zappyNavNoDarkHero) return;
+        if(window.innerWidth<=768){nb.classList.remove('scrolled');cTC(nb);if(cm){cm.classList.remove('scrolled');cTC(cm);}return;}
+        var y=window.scrollY||window.pageYOffset;
+        if(y>th){
+          nb.classList.add('scrolled');nb.style.setProperty('background-color',fb,'important');nb.style.setProperty('background-image','none','important');
+          nb.style.setProperty('--frosted-text',st);nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';
+          sTC(nb,st);
+          if(cm){cm.classList.add('scrolled');cm.style.setProperty('background',fb,'important');cm.style.setProperty('backdrop-filter','blur(12px)','important');cm.style.setProperty('-webkit-backdrop-filter','blur(12px)','important');sTC(cm,st);}
+        }else{
+          nb.classList.remove('scrolled');nb.style.setProperty('background-color','transparent','important');nb.style.removeProperty('background-image');
+          nb.style.removeProperty('--frosted-text');nb.style.backdropFilter='none';nb.style.webkitBackdropFilter='none';nb.style.boxShadow='none';
+          cTC(nb);
+          if(cm){cm.classList.remove('scrolled');cm.style.setProperty('background','transparent','important');cm.style.setProperty('backdrop-filter','none','important');cm.style.setProperty('-webkit-backdrop-filter','none','important');cTC(cm);}
+        }
+      }
+      function sLum(rv,gv,bv){rv/=255;gv/=255;bv/=255;rv=rv<=0.03928?rv/12.92:Math.pow((rv+0.055)/1.055,2.4);gv=gv<=0.03928?gv/12.92:Math.pow((gv+0.055)/1.055,2.4);bv=bv<=0.03928?bv/12.92:Math.pow((bv+0.055)/1.055,2.4);return 0.2126*rv+0.7152*gv+0.0722*bv;}
+      window.addEventListener('scroll',onS,{passive:true});
+      window.addEventListener('resize',onS,{passive:true});
+      onS();
+      var heroEl=document.querySelector('section[class*="hero"],[data-hero-type],main>section:first-child');
+      var hasDH=false;
+      if(heroEl){var hCs=getComputedStyle(heroEl);var hBI=hCs.backgroundImage;if(hBI&&hBI!=='none'){if(hBI.indexOf('url(')!==-1){var hM2=hCs.backgroundColor.match(/\d+/g);if(hM2&&hM2.length>=3){hasDH=sLum(parseInt(hM2[0]),parseInt(hM2[1]),parseInt(hM2[2]))<0.4;}else{hasDH=true;}}else if(hBI.indexOf('gradient')!==-1){var cM=hBI.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g);if(cM&&cM.length>0){var tLm=0;for(var ci=0;ci<cM.length;ci++){var pts=cM[ci].match(/\d+/g);tLm+=sLum(parseInt(pts[0]),parseInt(pts[1]),parseInt(pts[2]));}hasDH=(tLm/cM.length)<0.4;}else{hasDH=true;}}else{hasDH=true;}}else{var hM=hCs.backgroundColor.match(/\d+/g);if(hM&&hM.length>=3){hasDH=sLum(parseInt(hM[0]),parseInt(hM[1]),parseInt(hM[2]))<0.4;}}}
+      if(!hasDH){window.removeEventListener('scroll',onS);window.removeEventListener('resize',onS);applyScrolled();window._zappyNavNoDarkHero=true;}
+    })();
+    </script>
+
+    <script id="zappy-mobile-lang-menu-script">
+    (function() {
+      function initMobileLangMenu() {
+        if (window.innerWidth > 768) {
+          var existingMenu = document.querySelector('.mobile-lang-menu');
+          if (existingMenu) existingMenu.remove();
+          return;
+        }
+        if (document.querySelector('.mobile-lang-menu')) return;
+        var switcher = document.querySelector('.lang-switcher');
+        if (!switcher) return;
+        var dropdown = switcher.querySelector('.lang-switcher-dropdown');
+        if (!dropdown) return;
+        var options = dropdown.querySelectorAll('.lang-option');
+        if (options.length === 0) return;
+        var navMenu = document.getElementById('navMenu') || document.querySelector('.nav-menu') || document.querySelector('nav ul');
+        if (!navMenu) return;
+        var currentLang = document.documentElement.lang || 'en';
+        var langConfigs = {
+          he: {name:'עברית',flag:'https://api.iconify.design/circle-flags/il.svg'},
+          en: {name:'English',flag:'https://api.iconify.design/circle-flags/us.svg'},
+          ar: {name:'العربية',flag:'https://api.iconify.design/circle-flags/sa.svg'},
+          fr: {name:'Français',flag:'https://api.iconify.design/circle-flags/fr.svg'},
+          es: {name:'Español',flag:'https://api.iconify.design/circle-flags/es.svg'},
+          de: {name:'Deutsch',flag:'https://api.iconify.design/circle-flags/de.svg'},
+          ru: {name:'Русский',flag:'https://api.iconify.design/circle-flags/ru.svg'},
+          zh: {name:'中文',flag:'https://api.iconify.design/circle-flags/cn.svg'},
+          ja: {name:'日本語',flag:'https://api.iconify.design/circle-flags/jp.svg'},
+          pt: {name:'Português',flag:'https://api.iconify.design/circle-flags/br.svg'},
+          it: {name:'Italiano',flag:'https://api.iconify.design/circle-flags/it.svg'},
+          ko: {name:'한국어',flag:'https://api.iconify.design/circle-flags/kr.svg'}
+        };
+        var container = document.createElement('div');
+        container.className = 'mobile-lang-menu';
+        var currentConfig = langConfigs[currentLang] || {name:currentLang,flag:''};
+        var toggleBtn = document.createElement('button');
+        toggleBtn.className = 'mobile-lang-toggle';
+        toggleBtn.type = 'button';
+        var currentFlagHtml = currentConfig.flag ? '<img src="' + currentConfig.flag + '" width="20" height="20" alt="" style="border-radius:50%;margin-right:8px;margin-left:8px;">' : '';
+        toggleBtn.innerHTML = currentFlagHtml + currentConfig.name;
+        container.appendChild(toggleBtn);
+        var optionsDiv = document.createElement('div');
+        optionsDiv.className = 'mobile-lang-options';
+        var currentLink = document.createElement('a');
+        currentLink.className = 'mobile-lang-option active';
+        currentLink.href = '#';
+        currentLink.innerHTML = currentFlagHtml + currentConfig.name;
+        optionsDiv.appendChild(currentLink);
+        options.forEach(function(opt) {
+          var link = document.createElement('a');
+          link.className = 'mobile-lang-option';
+          link.href = opt.getAttribute('href');
+          link.innerHTML = opt.innerHTML;
+          optionsDiv.appendChild(link);
+        });
+        container.appendChild(optionsDiv);
+        navMenu.appendChild(container);
+        toggleBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleBtn.classList.toggle('expanded');
+          optionsDiv.classList.toggle('expanded');
+        });
+      }
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileLangMenu); }
+      else { initMobileLangMenu(); }
+      window.addEventListener('resize', function() { clearTimeout(window._mlrt); window._mlrt = setTimeout(initMobileLangMenu, 250); });
+    })();
+    </script>
+</body>
+</html>

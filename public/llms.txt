@@ -1,0 +1,79 @@
+# Business — Generative Engine Optimization Map
+
+---
+
+## Pages
+
+### בית
+https://example.com
+חנות ציוד לטיולים עם הכל שצריך לצאת לטבע בביטחון. תרמילים, אוהלים, ביגוד ועוד — TERRA היא היעד שלך לכל הרפתקה בחוץ. קנה עכשיו!
+
+### מדריך שטח
+https://example.com/field-guide
+מדריך השטח של TERRA מכיל טיפים מקצועיים, רשימות ציוד חיוניות ועצות לטיולים בטוחים. הכן את עצמך לכל שטח עם הידע הנכון לפני כל יציאה לטבע.
+
+### אודות TERRA
+https://example.com/about
+TERRA נוסדה מתוך אהבה אמיתית לטבע ולהרפתקאות. אנו מאמינים שכל אחד ראוי לציוד איכותי שמחזיק בשטח. הכירו את הצוות, הערכים והחזון שהפכו אותנו לחנות ציוד לטיולים מובילה.
+
+### צור קשר
+https://example.com/contact
+יש שאלה על ציוד, טיול או הזמנה? צוות TERRA זמין לעזור לך לבחור נכון. צור קשר עוד היום ותקבל ייעוץ אישי מאנשי מקצוע שאוהבים את הטבע כמוך.
+
+### Products
+https://example.com/products
+המוצרים שלנו - TERRA
+
+### Cart
+https://example.com/cart
+עגלת הקניות שלך
+
+### Checkout
+https://example.com/checkout
+תשלום
+
+### Login
+https://example.com/login
+התחברות לקוחות
+
+### Account
+https://example.com/account
+החשבון שלי
+
+### Order Success
+https://example.com/order-success
+תודה על ההזמנה
+
+### Product Detail
+https://example.com/product/:slug
+פרטי המוצר - TERRA
+
+### Category
+https://example.com/category/:slug
+מוצרים - TERRA
+
+## Legal & Policy
+
+### Privacy Policy
+https://example.com/privacy
+Information about how user data is collected, stored, and protected.
+
+### Terms & Conditions
+https://example.com/terms
+Legal terms describing service usage, rights, and policies.
+
+### Accessibility Statement
+https://example.com/accessibility
+Information about WCAG compliance and accessibility features.
+
+---
+
+# Business Context (for LLM understanding)
+
+## About Business
+---
+
+# Additional Resources
+
+- **Sitemap**: https://example.com/sitemap.xml
+- **Robots.txt**: https://example.com/robots.txt
